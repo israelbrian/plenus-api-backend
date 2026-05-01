@@ -1,0 +1,9 @@
+name = "plenus-api-backend"
+compatibility_date = "2024-03-20"
+main = "src/index.ts"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "plenus-catalog-db"
+database_id = "26d8d54a-663d-467b-977c-9f5a45a34e5b"
+
