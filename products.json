@@ -1,0 +1,227 @@
+{
+  "produtos": [
+    {
+      "id": 1,
+      "nome": "Armário para Sala",
+      "categoria": "Armários",
+      "categoriaSlug": "armario",
+      "imagemPrincipal": "/images/produtos/armario/armario-sala.jpeg",
+      "imagens": [
+        "/images/produtos/armario/armario-sala.jpeg"
+      ],
+      "descricao": "Armário planejado sob medida, ideal para a organização de itens e otimização de espaço na sala de estar, garantindo um visual minimalista e elegante.",
+      "destaque": false,
+      "relevancia": 4
+    },
+    {
+      "id": 2,
+      "nome": "Armário Banheiro Planejado",
+      "categoria": "Banheiros",
+      "categoriaSlug": "banheiro",
+      "imagemPrincipal": "/images/produtos/banheiro/banheiro-1.jpg",
+      "imagens": [
+        "/images/produtos/banheiro/banheiro-1.jpg",
+        "/images/produtos/banheiro/banheiro-2.jpg",
+        "/images/produtos/banheiro/banheiro-3.jpg"
+      ],
+      "descricao": "Conjunto completo de marcenaria para banheiro planejado, composto por armários de excelente divisória e resistente à umidade típica do ambiente.",
+      "destaque": false,
+      "relevancia": 3
+    },
+    {
+      "id": 3,
+      "nome": "Área Gourmet Planejada",
+      "categoria": "Cozinhas",
+      "categoriaSlug": "cozinha",
+      "imagemPrincipal": "/images/produtos/cozinha/area-gourmet.jpg",
+      "imagens": [
+        "/images/produtos/cozinha/area-gourmet.jpg"
+      ],
+      "descricao": "Projeto focado em áreas gourmet, perfeitamente alinhado com churrasqueiras e áreas de lazer, proporcionando funcionalidade e beleza nas suas recepções.",
+      "destaque": false,
+      "relevancia": 4
+    },
+    {
+      "id": 4,
+      "nome": "Cozinha Planejada Completa",
+      "categoria": "Cozinhas",
+      "categoriaSlug": "cozinha",
+      "imagemPrincipal": "/images/produtos/cozinha/armario&movel-cozinha-.jpg",
+      "imagens": [
+        "/images/produtos/cozinha/armario&movel-cozinha-.jpg"
+      ],
+      "descricao": "Conjunto de móveis para bancada e pia da cozinha. Acabamento moderno que facilita a limpeza no dia-a-dia.",
+      "destaque": true,
+      "relevancia": 3
+    },
+    {
+      "id": 5,
+      "nome": "Guarda Roupa Planejado Completo",
+      "categoria": "Guarda Roupas",
+      "categoriaSlug": "guarda-roupa",
+      "imagemPrincipal": "/images/produtos/guarda-roupa/guarda-roupa-1.jpg",
+      "imagens": [
+        "/images/produtos/guarda-roupa/guarda-roupa-1.jpg",
+        "/images/produtos/guarda-roupa/guarda-roupa-2.jpg",
+        "/images/produtos/guarda-roupa/guarda-roupa-3.jpg",
+        "/images/produtos/guarda-roupa/guarda-roupa-4.jpg"
+      ],
+      "descricao": "Guarda-roupa planejado completo com divisão inteligente, cabideiros reforçados, gavetas espaçosas e acabamento em MDF de altíssima qualidade.",
+      "destaque": false,
+      "relevancia": 5
+    },
+    {
+      "id": 6,
+      "nome": "Cozinha Planejada Moderna",
+      "categoria": "Cozinhas",
+      "categoriaSlug": "cozinha",
+      "imagemPrincipal": "/images/produtos/cozinha/armario-cozinha-1.jpg",
+      "imagens": [
+        "/images/produtos/cozinha/armario-cozinha-1.jpg",
+        "/images/produtos/cozinha/armario-cozinha-2.jpg"
+      ],
+      "descricao": "Torre de armários projetada para aproveitamento verticalizado do ambiente da cozinha. Estante generosa em litragem e nichos dedicados a micro-ondas ou forno.",
+      "destaque": false,
+      "relevancia": 5
+    },
+    {
+      "id": 7,
+      "nome": "Cozinha Planejada Compacta",
+      "categoria": "Cozinhas",
+      "categoriaSlug": "cozinha",
+      "imagemPrincipal": "/images/produtos/cozinha/armario-cozinha.jpg",
+      "imagens": [
+        "/images/produtos/cozinha/armario-cozinha.jpg"
+      ],
+      "descricao": "Solução otimizada em marcenaria para cozinhas compactas que necessitam de organização de mantimentos sem perda de circulação no ambiente.",
+      "destaque": false,
+      "relevancia": 4
+    },
+    {
+      "id": 8,
+      "nome": "Escritório Corporativo e Home Office",
+      "categoria": "Escritórios",
+      "categoriaSlug": "escritorio",
+      "imagemPrincipal": "/images/produtos/escritorio/escritorio.jpg",
+      "imagens": [
+        "/images/produtos/escritorio/escritorio.jpg"
+      ],
+      "descricao": "Estação de trabalho milimetricamente desenhada visando conforto ergonômico, espaçamento de monitores e armazenamento essencial de documentos em gaveteiros fluidos.",
+      "destaque": true,
+      "relevancia": 4
+    },
+    {
+      "id": 9,
+      "nome": "Fechamento de Hall de Apartamento",
+      "categoria": "Halls",
+      "categoriaSlug": "hall",
+      "imagemPrincipal": "/images/produtos/hall/fechamento-hall-apt-1.jpg",
+      "imagens": [
+        "/images/produtos/hall/fechamento-hall-apt-1.jpg",
+        "/images/produtos/hall/fechamento-hall-apt-2.jpg",
+        "/images/produtos/hall/fechamento-hall-apt-3.jpg",
+        "/images/produtos/hall/fechamento-hall-apt-4.jpg"
+      ],
+      "descricao": "Estrutura imponente de fechamento e privacidade total de Halls e Entradas de apartamento. Garante estética blindada em edifícios de alto padrão, mantendo discrição absoluta.",
+      "destaque": false,
+      "relevancia": 5
+    },
+    {
+      "id": 10,
+      "nome": "Painel de Apoio Executivo",
+      "categoria": "Painéis",
+      "categoriaSlug": "painel-sala",
+      "imagemPrincipal": "/images/produtos/painel-sala/painel-escritorio.jpg",
+      "imagens": [
+        "/images/produtos/painel-sala/painel-escritorio.jpg"
+      ],
+      "descricao": "Lindo painel amadeirado de design limpo, servindo perfeitamente de suporte ou textura para escritórios, salas de espera ou divisões parciais.",
+      "destaque": false,
+      "relevancia": 4
+    },
+    {
+      "id": 11,
+      "nome": "Painel Decorativo para Sala",
+      "categoria": "Painéis",
+      "categoriaSlug": "painel-sala",
+      "imagemPrincipal": "/images/produtos/painel-sala/painel-sala-1.jpeg",
+      "imagens": [
+        "/images/produtos/painel-sala/painel-sala-1.jpeg",
+        "/images/produtos/painel-sala/painel-sala-2.jpeg"
+      ],
+      "descricao": "Painel contínuo com acabamento formidável. Harmoniza de forma fluída com quadros, arandelas de iluminação ou simplesmente trazendo aquecimento em madeira ao ambiente frio.",
+      "destaque": false,
+      "relevancia": 5
+    },
+    {
+      "id": 12,
+      "nome": "Painel para Televisão (Home Theater)",
+      "categoria": "Painéis",
+      "categoriaSlug": "painel-sala",
+      "imagemPrincipal": "/images/produtos/painel-sala/painel-tv.JPG",
+      "imagens": [
+        "/images/produtos/painel-sala/painel-tv.JPG"
+      ],
+      "descricao": "Home planejado pensado cuidadosamente na passagem invisível de fiações, recuo dos fixadores de TV suspensa e resistência contra tombamento.",
+      "destaque": false,
+      "relevancia": 4
+    },
+    {
+      "id": 13,
+      "nome": "Mobiliário Comercial para Salão",
+      "categoria": "Projetos Comerciais",
+      "categoriaSlug": "planejados-comercio",
+      "imagemPrincipal": "/images/produtos/planejados comercio/salao-1.jpg",
+      "imagens": [
+        "/images/produtos/planejados comercio/salao-1.jpg",
+        "/images/produtos/planejados comercio/salao-2.jpg",
+        "/images/produtos/planejados comercio/salao-3.jpg"
+      ],
+      "descricao": "Conjunto corporativo robusto focado em Salões e Estéticas. Projetado para aguentar uso contínuo de clientes, fluxo intenso e fácil isolamento de áreas úmidas das cubas.",
+      "destaque": true,
+      "relevancia": 5
+    }
+  ],
+  "categorias": [
+    {
+      "slug": "armario",
+      "nome": "Armários",
+      "icone": "armario"
+    },
+    {
+      "slug": "banheiro",
+      "nome": "Banheiro",
+      "icone": "banho"
+    },
+    {
+      "slug": "cozinha",
+      "nome": "Cozinha",
+      "icone": "cozinha"
+    },
+    {
+      "slug": "escritorio",
+      "nome": "Escritório",
+      "icone": "escritorio"
+    },
+    {
+      "slug": "guarda-roupa",
+      "nome": "Guarda Roupa",
+      "icone": "guarda-roupa"
+    },
+    {
+      "slug": "hall",
+      "nome": "Hall",
+      "icone": "hall"
+    },
+    {
+      "slug": "painel-sala",
+      "nome": "Painel",
+      "icone": "painel"
+    },
+    {
+      "slug": "planejados-comercio",
+      "nome": "Comercial",
+      "icone": "comercio"
+    }
+  ]
+}
