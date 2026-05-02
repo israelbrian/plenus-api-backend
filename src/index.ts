@@ -47,6 +47,25 @@ app.get('/categorias', async (c) => {
   }
 });
 
+app.post('/categorias', authMiddleware, async (c) => {
+  try {
+    const body = await c.req.json();
+    const { slug, nome, icone } = body;
+    
+    // Inserindo a nova categoria
+    const result = await c.env.DB.prepare(`
+      INSERT INTO categorias (slug, nome, icone)
+      VALUES (?, ?, ?)
+      RETURNING *
+    `).bind(slug, nome, icone).first();
+
+    return c.json({ message: 'Categoria criada com sucesso!', categoria: result }, 201);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: 'Erro ao criar categoria. Verifique se o slug já existe.' }, 500);
+  }
+});
+
 app.post('/produtos', authMiddleware, async (c) => {
   try {
     const body = await c.req.json();
