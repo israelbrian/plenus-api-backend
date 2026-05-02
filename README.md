@@ -70,12 +70,12 @@ npm install
 
 **2. Criar as Tabelas no Banco Local:**
 ```bash
-npx wrangler d1 execute plenus-catalog-db --local --file=./schema.sql
+npx wrangler d1 execute plenus-catalog-db --local --file=./database/schema.sql
 ```
 
 **3. Popular o Banco com os Dados Legados (Seed):**
 ```bash
-npx wrangler d1 execute plenus-catalog-db --local --file=./seed.sql
+npx wrangler d1 execute plenus-catalog-db --local --file=./database/seed.sql
 ```
 
 **4. Iniciar o Servidor de Desenvolvimento:**
@@ -95,12 +95,12 @@ Durante o desenvolvimento diário, é muito comum que os bancos de dados Local e
    Sempre que for criar uma nova feature, garanta que seu banco local tem os dados reais e mais atualizados.
    ```bash
    # 1. Faz o download do banco de produção (cria o arquivo dump)
-   npx wrangler d1 export plenus-catalog-db --remote --output=producao.sql
+   npx wrangler d1 export plenus-catalog-db --remote --output=database/dumps/producao.sql
    
    # 2. Exclua a pasta oculta .wrangler da raiz do projeto para limpar o lixo local
    
    # 3. Injete o banco baixado no seu ambiente local limpo
-   npx wrangler d1 execute plenus-catalog-db --local --file=./producao.sql
+   npx wrangler d1 execute plenus-catalog-db --local --file=./database/dumps/producao.sql
    ```
 
 2. **Programe e Teste (Localmente)**
@@ -119,13 +119,13 @@ Durante o desenvolvimento diário, é muito comum que os bancos de dados Local e
    
    ```bash
    # 1. Exporta seu banco local com todos os dados
-   npx wrangler d1 export plenus-catalog-db --local --output=local.sql
+   npx wrangler d1 export plenus-catalog-db --local --output=database/dumps/local.sql
    
    # 2. LIMPEZA DA PRODUÇÃO (Atenção: Apaga tudo na Nuvem)
    npx wrangler d1 execute plenus-catalog-db --remote --command="DROP TABLE IF EXISTS produtos; DROP TABLE IF EXISTS categorias;"
    
    # 3. Injeta a sua cópia local no banco remoto limpo
-   npx wrangler d1 execute plenus-catalog-db --remote --file=local.sql
+   npx wrangler d1 execute plenus-catalog-db --remote --file=database/dumps/local.sql
    ```
 
 ---
