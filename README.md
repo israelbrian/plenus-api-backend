@@ -27,7 +27,34 @@ Destinadas ao consumo direto pelo site (Front-end) da Plenus. Não requerem aute
 
 ### 2. Rotas Privadas (Mutação - POST)
 Destinadas ao consumo futuro pelo **Painel Admin**. São rigorosamente blindadas por um `authMiddleware` que exige o cabeçalho `x-api-key`.
-- `POST /produtos` - Criação de novos móveis (Valida a Chave Estrangeira com Categorias já existentes).
+- `POST /upload` - Faz o upload de imagens (`multipart/form-data`) para o bucket Cloudflare R2 e retorna a URL pública gerada.
+  - **Regra de Negócio (Pastas Visuais):** O R2 utiliza arquitetura *Object Storage*, onde pastas não existem fisicamente, sendo apenas prefixos no nome do arquivo. Para organizar as fotos no painel da Cloudflare, esta rota espera um parâmetro de texto chamado `pasta` (além do arquivo `image`). Na interface do Painel Admin (para o cliente), isso será invisível: o Front-end (Next.js) capturará automaticamente o valor do campo "Categoria" que o usuário selecionou e o enviará como parâmetro "pasta" para a API por baixo dos panos. Se o valor não for enviado, o arquivo cairá no prefixo `geral/`.
+  - **Contrato de API (Consumo via Front-end):**
+    Para interagir com esta rota, a aplicação cliente (ex: Next.js) deve submeter a requisição utilizando o formato genérico `multipart/form-data`. O envio do arquivo físico sob a chave exata `image` é estritamente obrigatório.
+    
+    **Abstração da Interface (UI):** A organização das pastas é totalmente abstraída para o usuário final. Na tela de cadastro, o usuário interage apenas com um campo padrão de upload (`<input type="file" />`) e um menu de seleção de categorias (`<select>`). O código Front-end deve interceptar esses elementos de UI e injetar dinamicamente o valor selecionado da categoria dentro da chave `pasta` do formulário, organizando o arquivo no R2 de forma transparente.
+    
+    ```javascript
+    // Exemplo de integração Front-end (Next.js)
+    const formData = new FormData();
+    
+    // 1. Arquivo físico interceptado diretamente do input file
+    formData.append('image', arquivoFotoSelecionada); 
+    
+    // 2. Slug da categoria interceptado do select de UI
+    formData.append('pasta', categoriaSelecionadaSlug); 
+
+    // 3. Submissão para a API Serverless
+    const response = await fetch('https://api.plenus.com/upload', {
+      method: 'POST',
+      headers: { 'x-api-key': 'senha-do-painel' },
+      body: formData // O navegador define o Content-Type: multipart/form-data automaticamente
+    });
+    
+    const dados = await response.json();
+    console.log(dados.url); // URL pública gerada que deverá compor o payload JSON do POST /produtos
+    ```
+- `POST /produtos` - Criação de novos móveis. Valida a Chave Estrangeira com Categorias já existentes e requer que a URL da imagem (devolvida previamente pela rota de upload) seja enviada no JSON do body.
 - `POST /categorias` - Criação de novas categorias para suporte do catálogo.
 
 ### 3. Rotas Privadas (Atualização - PATCH)
@@ -146,10 +173,79 @@ npm run deploy
 
 ---
 
-## 📘 Dicionário do Banco D1 (SQLite)
+## ☁️ Armazenamento de Imagens (Cloudflare R2)
 
-- **`produtos`**: Armazena os itens do catálogo. A coluna `imagens` salva múltiplos links como String em formato JSON (ex: `'["link1.jpg", "link2.jpg"]'`), sendo convertida de volta para Array no envio ao front-end.
-- **`categorias`**: Tabela de restrição (Foreign Key). É impossível cadastrar um produto em uma categoria cujo `slug` não exista nesta tabela.
+Para a gestão de arquivos estáticos dinâmicos (uploads de fotos dos produtos feitos pelo painel administrativo), utilizamos o **Cloudflare R2**, que é a solução de Object Storage (similar ao AWS S3).
+
+### Propósito e Regras de Negócio
+- **Desacoplamento:** Nenhuma foto do produto deve ser enviada para dentro do repositório estático do front-end (`public/`), nem armazenada como blob no banco de dados. 
+- **O Fluxo:** O R2 hospeda o arquivo pesado e gera uma URL pública rápida e servida em CDN. O banco SQLite (D1) salva apenas essa String (URL).
+- **Abstração de Pastas:** No Object Storage, *pastas físicas não existem*. Elas são uma ilusão de interface baseada em prefixos textuais. Para salvar na pasta `cozinhas`, o arquivo é nomeado como `cozinhas/nomedafoto.jpg`. O front-end é responsável por abstrair isso, capturando o select da categoria e enviando-o via `FormData` na chave `pasta` ao fazer a requisição de upload.
+
+### Limites e Custos (Plano Gratuito)
+A Cloudflare possui uma camada gratuita extremamente generosa, focada em não penalizar o desenvolvedor:
+- **Armazenamento:** 10 GB gratuitos por mês.
+- **Leitura de Objetos (Views na Imagem):** 10 milhões de requisições por mês.
+- **Mutação (Uploads):** 1 milhão de requisições por mês.
+- *Particularidade:* Para ativar o R2 na conta, a Cloudflare exige o cadastro de um Cartão de Crédito por motivos de controle e anti-fraude. Se o armazenamento ultrapassar os 10 GB, a cobrança é de apenas US$ 0,015 (menos de 10 centavos de real) por Gigabyte extra.
+
+### 📋 Checklist de Migração (Para a Conta do Cliente Final)
+Quando você for migrar a aplicação para a conta definitiva da Plenus, siga estes passos exatos:
+
+1. **Conta e Pagamento:** Crie a conta da Cloudflare e adicione o cartão de crédito da empresa (obrigatório para liberar o R2).
+2. **Criação do Bucket:**
+   - No painel da Cloudflare, navegue para **R2 Object Storage**.
+   - Clique em **Create Bucket** e nomeie-o (ex: `plenus-products-images`). Sem espaços ou maiúsculas.
+3. **Liberação Pública (Crítico):**
+   - Entre no Bucket recém-criado, vá na aba **Settings**.
+   - Procure por **Public Access** e clique para liberar o subdomínio `.r2.dev` (ou configure um domínio customizado caso tenham um).
+   - **Copie a URL pública gerada** (Ex: `https://pub-abcd123.r2.dev`).
+4. **Atualização do Código Local:**
+   - No arquivo `wrangler.toml`, na seção `[[r2_buckets]]`, altere o `bucket_name` para o nome que você usou no Passo 2.
+   - Na seção `[vars]`, cole a URL do Passo 3 na variável `PUBLIC_R2_URL`.
+5. **Deploy Final:**
+   - Rode o comando `npm run deploy` para atualizar os workers com a nova infraestrutura. A partir daí, os uploads irão para a conta do cliente.
+
+---
+
+## 📘 Banco de Dados Relacional (Cloudflare D1)
+
+Para o armazenamento relacional de dados (textos, relacionamentos e regras do catálogo), utilizamos o **Cloudflare D1**, um banco SQL serverless construído sobre o SQLite.
+
+### Propósito e Regras de Negócio
+- **Arquitetura Serverless:** O D1 roda nas bordas da internet (Edge). Diferente de bancos tradicionais (como MySQL/Postgres), ele não sofre com problemas de gargalos de conexão ("connection pools"). Ele responde de forma distribuída e ultra-rápida.
+- **Abstração de Tipos (Limitação do SQLite):** O SQLite não suporta nativamente tipos `Boolean` e `Array`. Por isso:
+  - **Booleanos** (ex: `destaque`) são mapeados para `INTEGER` (1 para True, 0 para False).
+  - **Arrays** (ex: galeria de múltiplas `imagens`) são convertidos para String (`JSON.stringify`) no banco e re-convertidos para Array (`JSON.parse`) via código (Hono) antes de chegar ao Front-end.
+- **Dicionário de Tabelas:**
+  - **`produtos`**: Tabela principal. Armazena os detalhes dos móveis. Salva apenas a URL pública (String) das imagens oriundas do R2.
+  - **`categorias`**: Tabela de taxonomia e restrição. Funciona como *Foreign Key* (Chave Estrangeira). A regra de negócio proíbe o cadastro de um produto apontando para um `categoriaSlug` que não exista previamente aqui.
+
+### Limites e Custos (Plano Gratuito)
+A generosidade da Cloudflare no D1 é perfeita para sistemas PME (Pequenas e Médias Empresas):
+- **Armazenamento:** 5 GB gratuitos de dados em texto. (Para um catálogo de produtos onde salvamos apenas strings, cabem literalmente milhões de móveis).
+- **Leitura (Selects):** 5 milhões de linhas lidas *por dia*.
+- **Escrita (Insert/Update/Delete):** 100 mil linhas escritas *por dia*.
+- *Custos Extras:* Se ultrapassar o limite diário ou de espaço, o preço é baixíssimo. O banco nunca sai do ar ou é bloqueado bruscamente.
+
+### 📋 Checklist de Migração (Para a Conta do Cliente Final)
+Quando você criar a conta da Cloudflare definitiva para o cliente, você começará sem nenhum banco de dados lá. Siga estes passos exatos no terminal para migrar a base:
+
+1. **Criação do Banco na Nuvem:**
+   - Estando logado via terminal (`npx wrangler login`) na nova conta, rode:
+   ```bash
+   npx wrangler d1 create plenus-catalog-db
+   ```
+2. **Atualização do Código Local (`wrangler.toml`):**
+   - O comando acima te devolverá no terminal um novo ID (`database_id`).
+   - Abra o seu `wrangler.toml`, vá na seção `[[d1_databases]]` e substitua o `database_id` antigo pelo novo ID gerado.
+3. **Construção das Tabelas na Produção (Crítico):**
+   - O banco novo está completamente vazio. Envie o seu schema de tabelas para a nuvem:
+   ```bash
+   npx wrangler d1 execute plenus-catalog-db --remote --file=./database/schema.sql
+   ```
+4. **Deploy Final:**
+   - Rode o `npm run deploy` para atualizar sua API. Agora ela está conectada ao D1 de produção da conta nova!
 
 ## 🔍 Consultas Rápidas no Banco (Via Terminal)
 

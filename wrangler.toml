@@ -7,3 +7,10 @@ binding = "DB"
 database_name = "plenus-catalog-db"
 database_id = "26d8d54a-663d-467b-977c-9f5a45a34e5b"
 
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "plenus-products-images"
+
+[vars]
+PUBLIC_R2_URL = "https://pub-263c4af3de374834b3c3f4334ae630d3.r2.dev"
+

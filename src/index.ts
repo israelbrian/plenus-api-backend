@@ -3,6 +3,8 @@ import { cors } from 'hono/cors';
 
 export interface Env {
   DB: D1Database;
+  BUCKET: R2Bucket;
+  PUBLIC_R2_URL: string;
   API_KEY: string;
 }
 
@@ -11,7 +13,7 @@ const app = new Hono<{ Bindings: Env }>();
 app.use('/*', cors({
   origin: '*',
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'x-api-key'],
+  allowHeaders: ['ContentType', 'x-api-key'],
 }));
 
 const authMiddleware = async (c: any, next: any) => {
@@ -63,6 +65,44 @@ app.post('/categorias', authMiddleware, async (c) => {
   } catch (e) {
     console.error(e);
     return c.json({ error: 'Erro ao criar categoria. Verifique se o slug já existe.' }, 500);
+  }
+});
+
+app.post('/upload', authMiddleware, async (c) => {
+  try {
+    // Extrai o FormData da requisição (multipart/form-data)
+    const body = await c.req.parseBody();
+    const file = body['image'];
+
+     // NOVIDADE: Pegamos o nome da pasta (se o front não mandar, cai na pasta 'geral')
+    // O 'as string' garante pro TypeScript que é um texto
+    const pasta = (body['pasta'] as string) || 'geral'; 
+    // Valida se o arquivo existe e é do tipo File
+    if (!file || !(file instanceof File)) {
+      return c.json({ error: 'Nenhuma imagem foi enviada no campo "image".' }, 400);
+    }
+    // NOVIDADE: Adicionamos a "pasta/" no começo do nome do arquivo
+    const fileName = `${pasta}/${file.name.replace(/\s+/g, '-')}`;
+
+    // Transforma o arquivo em um formato que o R2 entende (ArrayBuffer)
+    const arrayBuffer = await file.arrayBuffer();
+
+    // Faz o upload para o Bucket R2
+    await c.env.BUCKET.put(fileName, arrayBuffer, {
+      httpMetadata: { contentType: file.type },
+    });
+
+    // Monta a URL pública (usando a base da R2 dev e o nome do arquivo)
+    const publicUrl = `${c.env.PUBLIC_R2_URL}/${fileName}`;
+
+    return c.json({ 
+      message: 'Upload concluído com sucesso!',
+      url: publicUrl,
+      fileName: fileName
+    }, 201);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: 'Erro ao fazer upload da imagem.' }, 500);
   }
 });
 
