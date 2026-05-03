@@ -128,4 +128,43 @@ app.post('/produtos', authMiddleware, async (c) => {
   }
 });
 
+app.patch('/produtos/:id', authMiddleware, async (c) => {
+  try {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    
+    // Constrói a query de atualização dinamicamente baseada no que o front-end enviou
+    const updates = [];
+    const values = [];
+    
+    if (body.nome !== undefined) { updates.push('nome = ?'); values.push(body.nome); }
+    if (body.categoria !== undefined) { updates.push('categoria = ?'); values.push(body.categoria); }
+    if (body.categoriaSlug !== undefined) { updates.push('categoriaSlug = ?'); values.push(body.categoriaSlug); }
+    if (body.imagemPrincipal !== undefined) { updates.push('imagemPrincipal = ?'); values.push(body.imagemPrincipal); }
+    if (body.imagens !== undefined) { updates.push('imagens = ?'); values.push(JSON.stringify(body.imagens)); }
+    if (body.descricao !== undefined) { updates.push('descricao = ?'); values.push(body.descricao); }
+    if (body.destaque !== undefined) { updates.push('destaque = ?'); values.push(body.destaque ? 1 : 0); }
+    if (body.relevancia !== undefined) { updates.push('relevancia = ?'); values.push(body.relevancia); }
+    
+    if (updates.length === 0) {
+      return c.json({ error: 'Nenhum campo enviado para atualização.' }, 400);
+    }
+    
+    values.push(id); // O ID é sempre o último parâmetro (para a cláusula WHERE)
+    
+    const query = `UPDATE produtos SET ${updates.join(', ')} WHERE id = ? RETURNING *`;
+    
+    const result = await c.env.DB.prepare(query).bind(...values).first();
+    
+    if (!result) {
+      return c.json({ error: 'Produto não encontrado.' }, 404);
+    }
+
+    return c.json({ message: 'Produto atualizado com sucesso!', product: result }, 200);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: 'Erro ao atualizar produto.' }, 500);
+  }
+});
+
 export default app;
