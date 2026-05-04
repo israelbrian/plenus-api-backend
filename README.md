@@ -27,7 +27,8 @@ Destinadas ao consumo direto pelo site (Front-end) da Plenus. Não requerem aute
 - `GET /categorias/:slug` - Retorna a categoria completa e, como anexo, todos os produtos atrelados a ela.
 
 ### 2. Rotas Privadas (Mutação - POST)
-Destinadas ao consumo futuro pelo **Painel Admin**. São rigorosamente blindadas por um `authMiddleware` que exige o cabeçalho `x-api-key`.
+Destinadas ao consumo futuro pelo **Painel Admin** (ainda não implementado). São rigorosamente blindadas por um `authMiddleware` que exige o cabeçalho `x-api-key`.
+
 - `POST /upload` - Faz o upload de imagens (`multipart/form-data`) para o bucket Cloudflare R2 e retorna a URL pública gerada.
   - **Regra de Negócio (Pastas Visuais):** O R2 utiliza arquitetura *Object Storage*, onde pastas não existem fisicamente, sendo apenas prefixos no nome do arquivo. Para organizar as fotos no painel da Cloudflare, esta rota espera um parâmetro de texto chamado `pasta` (além do arquivo `image`). Na interface do Painel Admin (para o cliente), isso será invisível: o Front-end (Next.js) capturará automaticamente o valor do campo "Categoria" que o usuário selecionou e o enviará como parâmetro "pasta" para a API por baixo dos panos. Se o valor não for enviado, o arquivo cairá no prefixo `geral/`.
   - **Contrato de API (Consumo via Front-end):**
@@ -73,6 +74,11 @@ Destinadas ao consumo futuro pelo **Painel Admin**. São rigorosamente blindadas
 ## 🔗 Integração com o Front-end (Next.js)
 
 O Front-end atual do site Plenus Planejados foi estruturado de forma inteligente, utilizando um banco de dados "mock" local (`products.json`) e uma arquitetura baseada em "Dumb Components" (componentes agnósticos que apenas recebem dados). Por conta desse desacoplamento impecável, a substituição do arquivo estático pela nossa API real Hono + D1 será "melzinho na chupeta/Easy peasy".
+
+> [!NOTE]
+> **Documentação de UI/UX do Painel Administrativo**
+> Toda a arquitetura visual, abstrações de formulário (Dirty Fields), matemática de Drag & Drop para o Carrossel e regras de Upload Invisível para a construção do **Painel Admin** estão extensamente documentadas no arquivo dedicado: [`docs/02-admin-panel-ui-architecture.md`](./docs/02-admin-panel-ui-architecture.md).
+
 
 **Resumo e Validação da Integração:**
 - **Zero Refatoração Visual:** Arquivos como `<ProductGrid />` (renderização de cards) e `<SearchBar />` não exigem absolutamente nenhuma alteração. Eles continuarão operando independentes.
