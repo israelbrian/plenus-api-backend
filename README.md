@@ -21,9 +21,9 @@ A API está dividida em quatro escopos principais de acesso, gerenciados pelo Ho
 ### 1. Rotas Públicas (Leitura - GET)
 Destinadas ao consumo direto pelo site (Front-end) da Plenus. Não requerem autenticação e estão abertas via CORS.
 - `GET /produtos` - Retorna a lista completa de produtos ordenada por relevância.
-- `GET /produtos/:id` - Retorna os detalhes de um produto específico. (Em desenvolvimento)
-- `GET /categorias` - Retorna as categorias ativas no sistema.
-- `GET /categorias/:slug` - Retorna os detalhes de uma categoria específica. (Em desenvolvimento)
+- `GET /produtos/:id` - Retorna os detalhes de um produto específico (com formatação nativa de booleanos e arrays).
+- `GET /categorias` - Retorna as categorias ativas no sistema, ou seja, aquelas que estão cadastradas no banco de dados.
+- `GET /categorias/:slug` - Retorna a categoria completa e, como anexo, todos os produtos atrelados a ela.
 
 ### 2. Rotas Privadas (Mutação - POST)
 Destinadas ao consumo futuro pelo **Painel Admin**. São rigorosamente blindadas por um `authMiddleware` que exige o cabeçalho `x-api-key`.
@@ -69,6 +69,32 @@ Destinadas ao consumo futuro pelo **Painel Admin**. São rigorosamente blindadas
 
 ---
 
+## 🔗 Integração com o Front-end (Next.js)
+
+O Front-end atual do site Plenus Planejados foi estruturado de forma inteligente, utilizando um banco de dados "mock" local (`products.json`) e uma arquitetura baseada em "Dumb Components" (componentes agnósticos que apenas recebem dados). Por conta desse desacoplamento impecável, a substituição do arquivo estático pela nossa API real Hono + D1 será "melzinho na chupeta/Easy peasy".
+
+**Resumo e Validação da Integração:**
+- **Zero Refatoração Visual:** Arquivos como `<ProductGrid />` (renderização de cards) e `<SearchBar />` não exigem absolutamente nenhuma alteração. Eles continuarão operando independentes.
+- **Transição de Arrays:** A API Hono foi estrategicamente programada para converter as galerias de imagens via `JSON.parse()` e o campo destaque para `Boolean` antes de devolver a resposta HTTP. O Typescript do Front-end vai engolir a resposta sem reclamar de tipagens.
+- **Filtros Instantâneos (`useMemo`):** O `ProductsPageClient.tsx` atual possui toda a lógica pesada de filtro de busca e organização de categoria rodando na memória RAM do navegador. Basta fornecer os dados da API `GET /produtos` e deixar o front-end orquestrar o resto de forma otimizada.
+- **O que deverá ser alterado no Next.js:** O desenvolvedor Front-end precisará alterar unicamente o arquivo de serviços (`src/lib/products.ts`) ou injetar chamadas `fetch` dentro dos `useEffect` dos componentes Clients.
+
+*Exemplo Prático da Migração:*
+```tsx
+// ANTES (Usando JSON Mockado)
+useEffect(() => {
+  setProducts(getAllProducts());
+}, []);
+
+// DEPOIS (Lendo da Cloudflare D1 Serverless)
+useEffect(() => {
+  fetch('https://api.plenus.workers.dev/produtos')
+    .then(res => res.json())
+    .then(data => setProducts(data));
+}, []);
+```
+
+---
 ## 🔒 Segurança (Secrets e Variáveis)
 
 Este projeto **não** armazena chaves sensíveis no código (segurança "zero-trust").
