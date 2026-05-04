@@ -18,6 +18,7 @@ Este repositório contém a infraestrutura de **Back-end as a Service (BaaS)** d
 
 A API está dividida em quatro escopos principais de acesso, gerenciados pelo Hono.js:
 
+
 ### 1. Rotas Públicas (Leitura - GET)
 Destinadas ao consumo direto pelo site (Front-end) da Plenus. Não requerem autenticação e estão abertas via CORS.
 - `GET /produtos` - Retorna a lista completa de produtos ordenada por relevância.
@@ -114,7 +115,7 @@ npx wrangler secret put API_KEY
 
 ---
 
-## 💻 Manual do Desenvolvedor (Rodando Localmente)
+## 💻 Como rodar o projeto localmente
 
 Siga os comandos abaixo para inicializar a API na sua máquina:
 
