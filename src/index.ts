@@ -26,7 +26,7 @@ const authMiddleware = async (c: any, next: any) => {
 
 app.get('/produtos', async (c) => {
   try {
-    const { results } = await c.env.DB.prepare("SELECT * FROM produtos ORDER BY relevancia DESC").all();
+    const { results } = await c.env.DB.prepare("SELECT * FROM produtos ORDER BY relevancia DESC, id DESC").all();
     
     const formattedResults = results.map(product => ({
       ...product,
@@ -40,12 +40,67 @@ app.get('/produtos', async (c) => {
   }
 });
 
+app.get('/produtos/:id', async (c) => {
+  try {
+    const id = c.req.param('id');
+    const product = await c.env.DB.prepare("SELECT * FROM produtos WHERE id = ?").bind(id).first();
+    
+    if (!product) {
+      return c.json({ error: 'Produto não encontrado' }, 404);
+    }
+    
+    // Formata o produto (conversão do SQLite)
+    const formattedProduct = {
+      ...product,
+      destaque: product.destaque === 1,
+      imagens: product.imagens ? JSON.parse(product.imagens as string) : []
+    };
+
+    return c.json(formattedProduct);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: 'Erro ao buscar o produto' }, 500);
+  }
+});
+
 app.get('/categorias', async (c) => {
   try {
     const { results } = await c.env.DB.prepare("SELECT * FROM categorias").all();
     return c.json(results);
   } catch (e) {
     return c.json({ error: 'Erro ao buscar categorias' }, 500);
+  }
+});
+
+app.get('/categorias/:slug', async (c) => {
+  try {
+    const slug = c.req.param('slug');
+    
+    // 1. Busca as informações da categoria
+    const categoria = await c.env.DB.prepare("SELECT * FROM categorias WHERE slug = ?").bind(slug).first();
+    
+    if (!categoria) {
+      return c.json({ error: 'Categoria não encontrada' }, 404);
+    }
+    
+    // 2. Busca todos os produtos que pertencem a essa categoria
+    const { results: produtos } = await c.env.DB.prepare("SELECT * FROM produtos WHERE categoriaSlug = ? ORDER BY relevancia DESC, id DESC").bind(slug).all();
+    
+    // 3. Formata os produtos (conversão de booleanos e arrays)
+    const formattedProdutos = produtos.map(product => ({
+      ...product,
+      destaque: product.destaque === 1,
+      imagens: product.imagens ? JSON.parse(product.imagens as string) : []
+    }));
+
+    // Retorna um objeto consolidado (Categoria + Produtos)
+    return c.json({
+      categoria: categoria,
+      produtos: formattedProdutos
+    });
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: 'Erro ao buscar a categoria' }, 500);
   }
 });
 
