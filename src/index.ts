@@ -222,4 +222,92 @@ app.patch('/produtos/:id', authMiddleware, async (c) => {
   }
 });
 
+app.patch('/categorias/:slug', authMiddleware, async (c) => {
+  try {
+    const slugParams = c.req.param('slug');
+    const body = await c.req.json();
+    
+    const updates = [];
+    const values = [];
+    
+    if (body.nome !== undefined) { updates.push('nome = ?'); values.push(body.nome); }
+    if (body.slug !== undefined) { updates.push('slug = ?'); values.push(body.slug); }
+    if (body.icone !== undefined) { updates.push('icone = ?'); values.push(body.icone); }
+    
+    if (updates.length === 0) {
+      return c.json({ error: 'Nenhum campo enviado para atualização.' }, 400);
+    }
+    
+    values.push(slugParams);
+    const query = `UPDATE categorias SET ${updates.join(', ')} WHERE slug = ? RETURNING *`;
+    
+    // Se o slug mudou, exige uma atualização em cascata (Cascading Update) para não quebrar produtos
+    if (body.slug && body.slug !== slugParams) {
+      const updateCategoriaStm = c.env.DB.prepare(query).bind(...values);
+      // Atualiza também o slug em todos os produtos atrelados a esta categoria antiga
+      const updateProdutosStm = c.env.DB.prepare("UPDATE produtos SET categoriaSlug = ? WHERE categoriaSlug = ?").bind(body.slug, slugParams);
+      
+      // Batch roda múltiplas queries na mesma transação (Se uma falhar, todas falham - ACID)
+      const results = await c.env.DB.batch([updateCategoriaStm, updateProdutosStm]);
+      
+      if (results[0].results.length === 0) {
+        return c.json({ error: 'Categoria não encontrada.' }, 404);
+      }
+      return c.json({ message: 'Categoria e produtos atrelados atualizados com sucesso!', categoria: results[0].results[0] }, 200);
+    }
+
+    // Se o slug não mudou (só nome ou icone), faz update simples
+    const result = await c.env.DB.prepare(query).bind(...values).first();
+    if (!result) return c.json({ error: 'Categoria não encontrada.' }, 404);
+    return c.json({ message: 'Categoria atualizada com sucesso!', categoria: result }, 200);
+
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: 'Erro ao atualizar categoria.' }, 500);
+  }
+});
+
+app.delete('/produtos/:id', authMiddleware, async (c) => {
+  try {
+    const id = c.req.param('id');
+    const result = await c.env.DB.prepare("DELETE FROM produtos WHERE id = ?").bind(id).run();
+    
+    if (result.meta.changes === 0) {
+      return c.json({ error: 'Produto não encontrado.' }, 404);
+    }
+    
+    return c.json({ message: 'Produto excluído com sucesso!' }, 200);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: 'Erro ao excluir produto.' }, 500);
+  }
+});
+
+app.delete('/categorias/:slug', authMiddleware, async (c) => {
+  try {
+    const slug = c.req.param('slug');
+    
+    // REGRA DE NEGÓCIO (Restrict Delete): Impedir que apague a categoria se houver móveis dentro
+    // Isso previne o cliente de esvaziar o próprio site sem querer.
+    const checkProducts = await c.env.DB.prepare("SELECT COUNT(*) as total FROM produtos WHERE categoriaSlug = ?").bind(slug).first();
+    
+    if (checkProducts && (checkProducts.total as number) > 0) {
+      return c.json({ 
+        error: `Não é possível excluir esta categoria. Existem ${checkProducts.total} produtos atrelados a ela. Exclua ou mova os produtos antes.` 
+      }, 400);
+    }
+    
+    const result = await c.env.DB.prepare("DELETE FROM categorias WHERE slug = ?").bind(slug).run();
+    
+    if (result.meta.changes === 0) {
+      return c.json({ error: 'Categoria não encontrada.' }, 404);
+    }
+    
+    return c.json({ message: 'Categoria excluída com sucesso!' }, 200);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: 'Erro ao excluir categoria.' }, 500);
+  }
+});
+
 export default app;

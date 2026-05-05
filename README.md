@@ -63,11 +63,11 @@ Destinadas ao consumo futuro pelo **Painel Admin** (ainda não implementado). S�
 - `PATCH /produtos/:id` - Atualização parcial de um produto específico.
   - **Objetivos no Negócio:** Essencial para o fluxo do Painel Admin. Permite que o cliente altere apenas um aspecto do móvel (como corrigir um erro de digitação na descrição ou substituir uma foto antiga por um novo link gerado no R2) de forma rápida, sem a necessidade de re-enviar todo o formulário com dados que não foram modificados.
   - **Funcionamento Técnico (Query Dinâmica):** A rota foi construída para ser inteligente. O Hono analisa o JSON do `body` e injeta na cláusula `UPDATE` do banco D1 **somente** as propriedades que o front-end enviou. Se apenas `"imagemPrincipal"` for enviada, apenas esta coluna será sobrescrita. Campos do tipo Array (como `"imagens": ["url1", "url2"]`) são processados e convertidos em String (`JSON.stringify()`) de forma automática antes de serem salvos, alinhando-se com a limitação arquitetural do SQLite.
-- `PATCH /categorias/:slug` - Atualização de uma categoria específica. (Em desenvolvimento)
+- `PATCH /categorias/:slug` - Atualização de uma categoria. Inclui **Atualização em Cascata** (Cascading Update): se o `slug` da categoria for modificado, a API atualiza silenciosamente todos os móveis atrelados a ela para evitar que fiquem órfãos.
 
 ### 4. Rotas Privadas (Exclusão - DELETE)
-- `DELETE /produtos/:id` - Exclusão de um produto específico. (Em desenvolvimento)
-- `DELETE /categorias/:slug` - Exclusão de uma categoria específica. (Em desenvolvimento)
+- `DELETE /produtos/:id` - Exclusão de um produto específico do catálogo.
+- `DELETE /categorias/:slug` - Exclusão de uma categoria. Inclui **Trava de Segurança** (Restrict Delete): a API bloqueia a exclusão e retorna erro 400 caso existam produtos cadastrados dentro desta categoria, prevenindo deleções em cascata acidentais por parte do usuário.
 
 ---
 
